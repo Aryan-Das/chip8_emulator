@@ -48,6 +48,7 @@ int main(int argc, char *argv[]){
     bool keep_open = true;
 
     while(keep_open){
+        cpu->cycle();
         SDL_Event e;
         while(SDL_PollEvent(&e) > 0){
             switch (e.type) {

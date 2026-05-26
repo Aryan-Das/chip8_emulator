@@ -7,6 +7,7 @@ public:
     Chip8();   
     
     void increment_program_counter();
+    void cycle();
 
     uint16_t opcode;
     uint8_t memory[4096];

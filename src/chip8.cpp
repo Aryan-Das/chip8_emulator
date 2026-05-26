@@ -57,3 +57,119 @@ Chip8::Chip8(){
 void Chip8::increment_program_counter(){
         program_counter += 2; // because every instruction is 2 bytes
 }
+void Chip8::cycle(){
+    //since instructions are 2 bytes wide, take the instruction (eg. 10010001),
+    //left shift (1001000100000000)
+    //append the byte right after program counter index (e.g. 1001000101010101)
+    opcode = memory[program_counter] << 8 | memory[program_counter + 1];
+    int first = opcode >> 12;
+    switch(first){
+        case 0x0:
+            if(opcode == 0x00E0){
+                // clear screen
+                for(uint8_t g: graphics){
+                    g = 0;
+                }
+            } else if(opcode == 0x00E0){
+                program_counter = stack[stack_pointer];
+            }
+            increment_program_counter();
+            break;
+        case 0x1:
+            program_counter = opcode & 0xFFF; //keeps only the rightmost 12 bits
+            break;
+        case 0x2:
+            //store current instruction on the stack, prepare to run different instruction
+            stack[stack_pointer] = program_counter;
+            ++stack_pointer;
+            program_counter = opcode & 0xFFF;
+            break;
+        case 0x3:
+            int x = (opcode & 0xF00) >> 8;
+            if (registers[x] == opcode & 0x0FF ){
+                increment_program_counter();
+            }
+            increment_program_counter();
+            break;
+        case 0x4:
+            int x = (opcode & 0xF00) >> 8;
+            if (registers[x] != opcode & 0x0FF ){
+                increment_program_counter();
+            }
+            increment_program_counter();
+            break;
+        case 0x5:
+            int x = (opcode & 0xF00) >> 8;
+            int y = (opcode & 0x0F0) >> 4;
+            if(registers[x] == registers[y]){
+                increment_program_counter();
+            }
+            increment_program_counter();
+            break;
+        case 0x6:
+            int x = (opcode & 0xF00) >> 8;
+            registers[x] = opcode & 0x0FF;
+            increment_program_counter();
+            break;
+        case 0x7:
+            int x = (opcode & 0xF00) >> 8;
+            registers[x] += opcode & 0x0FF;
+            increment_program_counter();
+            break;
+        case 0x8:
+            int x = (opcode & 0xF00) >> 8;
+            int y = (opcode & 0x0F0) >> 4;
+            switch(opcode & 0x000F){
+                case 0x0:
+                    registers[x] = registers[y];
+                    break;
+                case 0x1:
+                    registers[x] = registers[x] | registers[y];
+                    break;
+                case 0x2:
+                    registers[x] = registers[x] & registers[y];
+                    break;
+                case 0x3:
+                    registers[x] = registers[x] ^ registers[y];
+                    break;
+                case 0x4:
+                    uint16_t sum = registers[x] + registers[y];
+                    registers[0xF] = sum > 255 ? 1 : 0;
+                    registers[x] = sum & 0x00FF;
+                    break;
+                case 0x5:
+                    registers[0xF] = registers[x] > registers[y] ? 1 : 0;
+                    registers[x] = registers[x] - registers[y];
+                    break;  
+                case 0x6:
+                    registers[0xF] = registers[x] & 1;
+                    registers[x] =  registers[x] >> 1;
+                    break;
+                case 0x7:
+                    registers[0xF] = registers[x] < registers[y] ? 1 : 0;
+                    registers[x] = registers[y] - registers[x];
+                    break;  
+                case 0xE:
+                    //we want the most significant bit and 0x80 == 1000 0000
+                    registers[0xF] = (registers[x] & 0x80 != 0)? 1 : 0;
+                    registers[x] =  registers[x] << 1;
+                    break;
+
+            }
+           
+            increment_program_counter();
+            break;
+
+        case 0x9:
+            int x = (opcode & 0xF00) >> 8;
+            int y = (opcode & 0x0F0) >> 4;
+            if(registers[x] != registers[y]){
+                increment_program_counter();
+            }
+            increment_program_counter();
+            break;
+
+    }
+
+
+}

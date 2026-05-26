@@ -154,6 +154,7 @@ void Chip8::cycle(){
                     registers[0xF] = (registers[x] & 0x80 != 0)? 1 : 0;
                     registers[x] =  registers[x] << 1;
                     break;
+                
 
             }
            
@@ -168,6 +169,76 @@ void Chip8::cycle(){
             }
             increment_program_counter();
             break;
+        case 0xA:
+            index = opcode & 0x0FFF;
+            increment_program_counter();
+            break;
+        case 0xB:
+            program_counter = (opcode & 0xFFF) + static_cast<uint16_t>(registers[0]);
+            break;
+        case 0xC:
+            int x = (opcode & 0xF00) >> 8;
+            int kk = opcode& 0x0FF;
+            registers[x]= static_cast<uint8_t> (static_cast<uint32_t>(rand()) & kk);
+            increment_program_counter();
+            break;
+        case 0xD:
+            registers[0xF] = 0;
+            int xx = (opcode & 0x0F00) >> 8;
+            int yy = (opcode & 0x00F0) >> 4;
+            int nn = (opcode & 0x000F);
+            int reg_x = registers[xx];
+            int reg_y = registers[yy];
+            int y = 0;
+            while(y < nn){
+                int pixel = memory[index + y];
+                int x = 0;
+                //sprites are always 8 pixels wide
+                while(x < 8){
+                    const u_int8_t msb = 0x80;
+
+                    if((pixel & (msb >> x)) != 0){
+                        int t_x = (reg_x + x) % 64;
+                        int t_y = (reg_y + y) % 32;
+                        int i = t_x + t_y * 64;
+                        graphics[i] = graphics[i] ^ 1;
+                        if(graphics[i] == 0){
+                            registers[0xF] = 1;
+                        }
+                    }
+                    ++x;
+                }
+
+                ++y;
+            }
+            increment_program_counter();
+            break;
+        case 0xE:
+            int x = (opcode & 0xF00) >> 8;
+            int kk = opcode& 0x0FF;
+            if(kk == 0x9E){
+                if(keys[registers[x]] == 1){
+                    increment_program_counter();
+                }
+            } 
+            else if(kk == 0xA1){
+                if(keys[registers[x]] != 1){
+                    increment_program_counter();
+                }
+            }
+            increment_program_counter();
+        
+            break;
+        // case 0xF:
+        //     int x = (opcode & 0xF00) >> 8;
+        //     int kk = opcode& 0x0FF;
+
+
+        //     increment_program_counter();
+        
+        default:
+            break;
+
 
     }
 

@@ -74,7 +74,7 @@ void Chip8::cycle(){
         case 0x0:
             if(opcode == 0x00E0){
                 // clear screen
-                for(uint8_t g: graphics){
+                for(uint8_t& g: graphics){
                     g = 0;
                 }
             } else if(opcode == 0x00EE){
@@ -256,8 +256,10 @@ void Chip8::cycle(){
                         }
                     }
                     //keep rerunning the same cycle until the key is pressed.
-                    if(!key_pressed)
+                    if(!key_pressed) {
+                        program_counter -= 2; 
                         return;
+                    }
 
                     break;
                 }

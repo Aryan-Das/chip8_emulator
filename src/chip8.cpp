@@ -1,6 +1,7 @@
 #include "chip8.hpp"
 #include <cstdlib> 
 #include <ctime>  
+#include <iostream>
 
 const uint8_t chip8_fontset[80] =
 { 
@@ -58,10 +59,12 @@ void Chip8::increment_program_counter(){
         program_counter += 2; // because every instruction is 2 bytes
 }
 void Chip8::cycle(){
+   
     //since instructions are 2 bytes wide, take the instruction (eg. 10010001),
     //left shift (1001000100000000)
     //append the byte right after program counter index (e.g. 1001000101010101)
     opcode = memory[program_counter] << 8 | memory[program_counter + 1];
+    std::cout << opcode;
     int first = opcode >> 12;
     switch(first){
         case 0x0:

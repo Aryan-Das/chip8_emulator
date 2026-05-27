@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
+#include <filesystem>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
 #include "chip8.hpp"
+
 
 using namespace std;
 
@@ -36,12 +39,31 @@ void de_init(){
     SDL_Quit();
     delete cpu;
 }
+void load_rom(char* filename){
+    ifstream input_file(filename);
+    uintmax_t size = filesystem::file_size(filename);
+    char byte;
+    int i = 0;
+    while (input_file.get(byte)) {
+        cpu->memory[i + 0x200] = byte;
+        ++i;
+    }
+}
 
 
 int main(int argc, char *argv[]){
     
     
     init();
+    // for (int i = 1; i < argc; ++i) {
+    //    argv[i];
+    // }
+    char* filename = argv[1];
+    if (!filename){
+        throw(string("No ROM Provided!\n"));
+    }
+    load_rom(filename);
+    
     
 
     

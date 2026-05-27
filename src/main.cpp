@@ -14,6 +14,26 @@ SDL_Texture* texture;
 SDL_Renderer* renderer;
 Chip8* cpu;
 
+const int keymap[]{
+    SDL_SCANCODE_X,
+    SDL_SCANCODE_1,
+    SDL_SCANCODE_2,
+    SDL_SCANCODE_3,
+    SDL_SCANCODE_Q,
+    SDL_SCANCODE_W,
+    SDL_SCANCODE_E, 
+    SDL_SCANCODE_Z,
+    SDL_SCANCODE_X,
+    SDL_SCANCODE_C,
+    SDL_SCANCODE_Z,
+    SDL_SCANCODE_C,
+    SDL_SCANCODE_4,
+    SDL_SCANCODE_R,
+    SDL_SCANCODE_F,
+    SDL_SCANCODE_V
+};
+
+
 void init(){
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         throw string("error initializing SDL: %s\n", SDL_GetError());
@@ -77,6 +97,27 @@ int main(int argc, char *argv[]){
                 case SDL_QUIT:
                     keep_open = false;
                     break;
+                case SDL_KEYDOWN: {
+                    for(int i = 0; i < 16; ++i){
+                        if(e.key.keysym.scancode == keymap[i]){
+                            cpu->keys[i]= 1;
+
+                        }
+                    }
+                    break;
+                    
+                }
+                case SDL_KEYUP: {
+                    for(int i = 0; i < 16; ++i){
+                        if(e.key.keysym.scancode == keymap[i]){
+                            cpu->keys[i]= 0;
+                            
+                        }
+                    }
+                    break;
+                    
+                }
+
                 default:
                     break;
             }

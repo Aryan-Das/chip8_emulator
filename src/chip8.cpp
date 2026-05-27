@@ -237,7 +237,18 @@ void Chip8::cycle(){
                     registers[x] = delay_timer;
                     break;
                 case 0x0A:
-                    // TODO: wait for key press, store key in registers[x];
+                    bool key_pressed  = false;
+                    for(int i = 0; i < 16; ++i){
+                        if(keys[i] != 0){
+                            registers[x] = i;
+                            key_pressed = true;
+                            break;
+                        }
+                    }
+                    //keep rerunning the same cycle until the key is pressed.
+                    if(!key_pressed)
+                        return;
+
                     break;
                 case 0x15:
                     delay_timer = registers[x];

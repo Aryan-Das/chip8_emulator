@@ -229,12 +229,48 @@ void Chip8::cycle(){
             increment_program_counter();
         
             break;
-        // case 0xF:
-        //     int x = (opcode & 0xF00) >> 8;
-        //     int kk = opcode& 0x0FF;
+        case 0xF:
+            int x = (opcode & 0xF00) >> 8;
+            int kk = opcode& 0x0FF;
+            switch(kk){
+                case 0x07:
+                    registers[x] = delay_timer;
+                    break;
+                case 0x0A:
+                    // TODO: wait for key press, store key in registers[x];
+                    break;
+                case 0x15:
+                    delay_timer = registers[x];
+                    break;
+                case 0x18:
+                    sound_timer = registers[x];
+                    break;
+                case 0x1E:
+                    index = index + registers[x];
+                    break;
+                case 0x29:
+                    if(registers[x] < 16){
+                        
+                        index = registers[x] * 0x5;
+                    }
+                    break;
+                case 0x33:
+                    memory[index] = registers[x] / 100;
+                    memory[index + 1] = (registers[x] / 10) % 10;
+                    memory[index + 2] = registers[x] % 10;
+                    break;
+                case 0x55:
+                    for(int i = 0; i <= x; ++i){
+                        memory[index + i] = registers[i];
+                    }
+                case 0x65:
+                    for(int i = 0; i <= x; ++i){
+                        registers[i] = memory[index + i];
+                    }
 
+            }
 
-        //     increment_program_counter();
+            increment_program_counter();
         
         default:
             break;

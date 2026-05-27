@@ -64,7 +64,7 @@ void Chip8::cycle(){
     //left shift (1001000100000000)
     //append the byte right after program counter index (e.g. 1001000101010101)
     opcode = memory[program_counter] << 8 | memory[program_counter + 1];
-    std::cout << opcode;
+
     int first = opcode >> 12;
     int x = 0;
     int y = 0;

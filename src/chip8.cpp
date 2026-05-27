@@ -34,19 +34,19 @@ Chip8::Chip8(){
     delay_timer = 0;
     sound_timer = 0;
 
-    for(uint8_t x : graphics){
+    for(uint8_t &x : graphics){
         x = 0;
     }
-    for(uint8_t x : memory){
+    for(uint8_t &x : memory){
         x = 0;
     }
-    for(uint16_t x : stack){
+    for(uint16_t &x : stack){
         x = 0;
     }
-    for(uint8_t x : registers){
+    for(uint8_t &x : registers){
         x = 0;
     }
-    for(uint8_t x : keys){
+    for(uint8_t &x : keys){
         x = 0;
     }
     for(int i = 0; i < 80; ++i){
@@ -66,14 +66,19 @@ void Chip8::cycle(){
     opcode = memory[program_counter] << 8 | memory[program_counter + 1];
     std::cout << opcode;
     int first = opcode >> 12;
+    int x = 0;
+    int y = 0;
+    int kk = 0;
     switch(first){
+        
         case 0x0:
             if(opcode == 0x00E0){
                 // clear screen
                 for(uint8_t g: graphics){
                     g = 0;
                 }
-            } else if(opcode == 0x00E0){
+            } else if(opcode == 0x00EE){
+                --stack_pointer;
                 program_counter = stack[stack_pointer];
             }
             increment_program_counter();
@@ -88,40 +93,40 @@ void Chip8::cycle(){
             program_counter = opcode & 0xFFF;
             break;
         case 0x3:
-            int x = (opcode & 0xF00) >> 8;
-            if (registers[x] == opcode & 0x0FF ){
+            x = (opcode & 0xF00) >> 8;
+            if (registers[x] == (opcode & 0x0FF)){
                 increment_program_counter();
             }
             increment_program_counter();
             break;
         case 0x4:
-            int x = (opcode & 0xF00) >> 8;
-            if (registers[x] != opcode & 0x0FF ){
+            x = (opcode & 0xF00) >> 8;
+            if (registers[x] != (opcode & 0x0FF) ){
                 increment_program_counter();
             }
             increment_program_counter();
             break;
         case 0x5:
-            int x = (opcode & 0xF00) >> 8;
-            int y = (opcode & 0x0F0) >> 4;
+            x = (opcode & 0xF00) >> 8;
+            y = (opcode & 0x0F0) >> 4;
             if(registers[x] == registers[y]){
                 increment_program_counter();
             }
             increment_program_counter();
             break;
         case 0x6:
-            int x = (opcode & 0xF00) >> 8;
+            x = (opcode & 0xF00) >> 8;
             registers[x] = opcode & 0x0FF;
             increment_program_counter();
             break;
         case 0x7:
-            int x = (opcode & 0xF00) >> 8;
+            x = (opcode & 0xF00) >> 8;
             registers[x] += opcode & 0x0FF;
             increment_program_counter();
             break;
         case 0x8:
-            int x = (opcode & 0xF00) >> 8;
-            int y = (opcode & 0x0F0) >> 4;
+            x = (opcode & 0xF00) >> 8;
+            y = (opcode & 0x0F0) >> 4;
             switch(opcode & 0x000F){
                 case 0x0:
                     registers[x] = registers[y];
@@ -135,11 +140,12 @@ void Chip8::cycle(){
                 case 0x3:
                     registers[x] = registers[x] ^ registers[y];
                     break;
-                case 0x4:
+                case 0x4: {
                     uint16_t sum = registers[x] + registers[y];
                     registers[0xF] = sum > 255 ? 1 : 0;
                     registers[x] = sum & 0x00FF;
                     break;
+                }
                 case 0x5:
                     registers[0xF] = registers[x] > registers[y] ? 1 : 0;
                     registers[x] = registers[x] - registers[y];
@@ -154,7 +160,7 @@ void Chip8::cycle(){
                     break;  
                 case 0xE:
                     //we want the most significant bit and 0x80 == 1000 0000
-                    registers[0xF] = (registers[x] & 0x80 != 0)? 1 : 0;
+                    registers[0xF] = ((registers[x] & 0x80) != 0)? 1 : 0;
                     registers[x] =  registers[x] << 1;
                     break;
                 
@@ -165,8 +171,8 @@ void Chip8::cycle(){
             break;
 
         case 0x9:
-            int x = (opcode & 0xF00) >> 8;
-            int y = (opcode & 0x0F0) >> 4;
+            x = (opcode & 0xF00) >> 8;
+            y = (opcode & 0x0F0) >> 4;
             if(registers[x] != registers[y]){
                 increment_program_counter();
             }
@@ -180,22 +186,22 @@ void Chip8::cycle(){
             program_counter = (opcode & 0xFFF) + static_cast<uint16_t>(registers[0]);
             break;
         case 0xC:
-            int x = (opcode & 0xF00) >> 8;
-            int kk = opcode& 0x0FF;
+            x = (opcode & 0xF00) >> 8;
+            kk = opcode& 0x0FF;
             registers[x]= static_cast<uint8_t> (static_cast<uint32_t>(rand()) & kk);
             increment_program_counter();
             break;
-        case 0xD:
+        case 0xD: {
             registers[0xF] = 0;
             int xx = (opcode & 0x0F00) >> 8;
             int yy = (opcode & 0x00F0) >> 4;
             int nn = (opcode & 0x000F);
             int reg_x = registers[xx];
             int reg_y = registers[yy];
-            int y = 0;
+            y = 0;
             while(y < nn){
                 int pixel = memory[index + y];
-                int x = 0;
+                x = 0;
                 //sprites are always 8 pixels wide
                 while(x < 8){
                     const u_int8_t msb = 0x80;
@@ -216,9 +222,10 @@ void Chip8::cycle(){
             }
             increment_program_counter();
             break;
+        }
         case 0xE:
-            int x = (opcode & 0xF00) >> 8;
-            int kk = opcode& 0x0FF;
+            x = (opcode & 0xF00) >> 8;
+            kk = opcode& 0x0FF;
             if(kk == 0x9E){
                 if(keys[registers[x]] == 1){
                     increment_program_counter();
@@ -233,13 +240,13 @@ void Chip8::cycle(){
         
             break;
         case 0xF:
-            int x = (opcode & 0xF00) >> 8;
-            int kk = opcode& 0x0FF;
+            x = (opcode & 0xF00) >> 8;
+            kk = opcode& 0x0FF;
             switch(kk){
                 case 0x07:
                     registers[x] = delay_timer;
                     break;
-                case 0x0A:
+                case 0x0A: {
                     bool key_pressed  = false;
                     for(int i = 0; i < 16; ++i){
                         if(keys[i] != 0){
@@ -253,6 +260,7 @@ void Chip8::cycle(){
                         return;
 
                     break;
+                }
                 case 0x15:
                     delay_timer = registers[x];
                     break;
@@ -277,10 +285,12 @@ void Chip8::cycle(){
                     for(int i = 0; i <= x; ++i){
                         memory[index + i] = registers[i];
                     }
+                    break;
                 case 0x65:
                     for(int i = 0; i <= x; ++i){
                         registers[i] = memory[index + i];
                     }
+                    break;
 
             }
 

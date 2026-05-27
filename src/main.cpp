@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
         throw(string("No ROM Provided!\n"));
     }
     load_rom(filename);
-    
+
     
 
     
@@ -84,6 +84,16 @@ int main(int argc, char *argv[]){
         }
         SDL_RenderClear(renderer);
         //Update Texture
+        void* bytes = nullptr;
+        int pitch = 0;
+
+        SDL_LockTexture(texture, nullptr, &bytes, &pitch);
+        uint32_t* pixelBuffer = static_cast<uint32_t*>(bytes);
+
+        for(int i = 0; i < 2048; ++i){
+            pixelBuffer[i] = (cpu->graphics[i] == 1) ? 0xFFFFFFFF : 0x000000FF;
+        }
+        SDL_UnlockTexture(texture);
 
         SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderPresent(renderer);

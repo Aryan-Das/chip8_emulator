@@ -42,7 +42,7 @@ void init(){
     win = SDL_CreateWindow("EMULATOR", // creates a window
                                     SDL_WINDOWPOS_CENTERED,
                                     SDL_WINDOWPOS_CENTERED,
-                                    1000, 1000, 0);
+                                    800, 800, 0);
     
     Uint32 render_flags = SDL_RENDERER_ACCELERATED;
 

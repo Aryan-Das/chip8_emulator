@@ -19,6 +19,7 @@ Run:
 ```bash
 build/build path-to-ch8-file.ch8
 ```
+You can find ch8 roms from various online sources.
 
 ## File Structure
  
